@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CleanSight - Nunsi</title>
+  <script defer>
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("nunsiTitle").classList.add("animate-bounce");
+    });
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .tab-active {
+      @apply border-b-4 border-green-500 font-semibold text-green-600;
+    }
+  </style>
+</head>
+<body class="bg-[#f0f3f4] min-h-screen text-gray-800">
+  <header class="text-center py-6 bg-white shadow">
+    <h1 id="nunsiTitle" class="text-4xl font-bold text-green-600 transition duration-700 ease-in-out">Nunsi</h1>
+    <p class="text-sm text-gray-500">Powered by CleanSight</p>
+  </header>
+
+  <main class="p-4 max-w-md mx-auto">
+    <div class="flex justify-center mb-6">
+      <button id="beforeTab" class="px-4 py-2 border-b-4 text-sm tab-active" onclick="switchTab('before')">Before</button>
+      <button id="afterTab" class="px-4 py-2 border-b-4 text-sm text-gray-600" onclick="switchTab('after')">After</button>
+    </div>
+
+    <!-- BEFORE SECTION -->
+    <section id="beforeSection">
+      <div class="space-y-4">
+        <video id="video" autoplay class="w-full rounded-lg shadow"></video>
+        <canvas id="canvas" class="hidden"></canvas>
+        <img id="capturedImage" alt="Captured" class="hidden rounded-lg" />
+
+        <div class="flex justify-between">
+          <button onclick="startCamera()" class="bg-green-500 text-white px-4 py-2 rounded shadow">Start Camera</button>
+          <button onclick="captureImage()" class="bg-green-600 text-white px-4 py-2 rounded shadow">Capture</button>
+        </div>
+        <p class="text-xs text-gray-500">Capture the dirty area before cleaning.</p>
+      </div>
+    </section>
+
+    <!-- AFTER SECTION -->
+    <section id="afterSection" class="hidden">
+      <div class="space-y-4">
+        <input type="file" accept="image/*" class="w-full" id="afterUpload" />
+        <button onclick="verifyCleanup()" class="bg-green-600 text-white w-full py-2 rounded shadow">Verify Cleanup</button>
+        <p class="text-xs text-gray-500">Upload a photo of the area after cleanup.</p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const capturedImage = document.getElementById('capturedImage');
+
+    function startCamera() {
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+          video.srcObject = stream;
+        })
+        .catch(err => console.error('Camera error:', err));
+    }
+
+    function captureImage() {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext('2d').drawImage(video, 0, 0);
+      const dataUrl = canvas.toDataURL('image/png');
+      capturedImage.src = dataUrl;
+      capturedImage.classList.remove('hidden');
+    }
+
+    function switchTab(tab) {
+      const beforeTab = document.getElementById('beforeTab');
+      const afterTab = document.getElementById('afterTab');
+      const beforeSection = document.getElementById('beforeSection');
+      const afterSection = document.getElementById('afterSection');
+
+      if (tab === 'after') {
+        beforeTab.classList.add('tab-active');
+        afterTab.classList.remove('tab-active');
+        beforeSection.classList.remove('hidden');
+        afterSection.classList.add('hidden');
+      } else {
+        afterTab.classList.add('tab-active');
+        beforeTab.classList.remove('tab-active');
+        afterSection.classList.remove('hidden');
+        beforeSection.classList.add('hidden');
+      }
+    }
+
+    function verifyCleanup() {
+      const uploadedFile = document.getElementById('afterUpload').files[0];
+      if (!uploadedFile) {
+        alert('Please upload an image after cleanup.');
+        return;
+      }
+      alert('Verification logic to be implemented...');
+    }
+  </script>
+</body>
+</html>
