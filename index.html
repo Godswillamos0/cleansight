@@ -12,7 +12,6 @@
       .fade-in-up {
         animation: fadeInUp 1s ease-out forwards;
       }
-
       @keyframes fadeInUp {
         0% {
           opacity: 0;
@@ -51,8 +50,9 @@
             </svg>
           </button>
           <div
+            id="profile-pic"
             class="bg-center bg-cover rounded-full w-10 h-10"
-            style='background-image: url("https://media.licdn.com/dms/image/v2/D4D03AQFvvITSMefWwA/profile-displayphoto-shrink_200_200/B4DZcHnIwcHMAg-/0/1748179390747?e=1758153600&v=beta&t=N6_SAfMm2xsMFXCs7fhOzNIv3v68aEYQaTeXa-_rLh8");'
+            style='background-image: url("");'
           ></div>
         </div>
       </header>
@@ -63,7 +63,7 @@
           <div class="text-center md:text-left">
             <h1 class="text-[26px] md:text-[32px] font-bold text-[#111518] leading-tight">
               Welcome back, 
-              <span class="text-[#199e63] fade-in-up inline-block" id="animated-name">Nunsi!</span>
+              <span class="text-[#199e63] fade-in-up inline-block" id="animated-name">...</span>
             </h1>
             <p class="text-sm text-[#637988]">Ready to make your space sparkle? Tap below to start.</p>
           </div>
@@ -72,25 +72,59 @@
           <div class="flex flex-wrap gap-4 justify-center md:justify-start">
             <div class="flex-1 min-w-[140px] border rounded-lg p-4 text-center md:text-left">
               <p class="text-sm font-medium text-[#111518]">Total Cleans</p>
-              <p class="text-2xl font-bold text-[#111518]">15</p>
+              <p id="clean-no" class="text-2xl font-bold text-[#111518]">...</p>
             </div>
             <div class="flex-1 min-w-[140px] border rounded-lg p-4 text-center md:text-left">
-              <p class="text-sm font-medium text-[#111518]">Badges Earned</p>
-              <p class="text-2xl font-bold text-[#111518]">7</p>
+              <p class="text-sm font-medium text-[#111518]">Tokens Earned</p>
+              <p id="token-amount" class="text-2xl font-bold text-[#111518]">...</p>
             </div>
           </div>
 
           <!-- Call to Action -->
           <div class="text-center pt-4">
-  <button 
-    onclick="window.location.href='https://cleansight.netlify.app/verify'"
-    class="bg-[#199e63] hover:bg-[#157b4f] transition text-white font-bold py-3 px-6 rounded-lg shadow-sm">
-    Start Cleaning
-  </button>
-</div>
+            <button 
+              onclick="window.location.href='https://cleansight.netlify.app/verify'"
+              class="bg-[#199e63] hover:bg-[#157b4f] transition text-white font-bold py-3 px-6 rounded-lg shadow-sm">
+              Start Cleaning
+            </button>
           </div>
         </div>
       </main>
     </div>
+
+    <!-- Fetch User Data -->
+    <script>
+      document.addEventListener("DOMContentLoaded", async () => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          console.error("No token found in localStorage. Redirecting to login.");
+          window.location.href = "/login";
+          return;
+        }
+
+        try {
+          const response = await fetch("https://amosgodswill00-cleansightapp.hf.space/user/", {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`
+            }
+          });
+
+          if (!response.ok) throw new Error("Failed to fetch user data");
+
+          const data = await response.json();
+
+          // Update the UI
+          document.getElementById("animated-name").textContent = data.username;
+          document.getElementById("token-amount").textContent = data.token;
+          document.getElementById("clean-no").textContent = data.clean_no;
+          document.getElementById("profile-pic").style.backgroundImage = `url('${data.profile_picture}')`;
+
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        }
+      });
+    </script>
   </body>
 </html>
