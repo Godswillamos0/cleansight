@@ -81,11 +81,18 @@
   </section>
 
   <!-- Verify -->
-  <div class="mt-6">
-    <button onclick="verifyCleanup()" class="bg-green-700 hover:bg-green-800 w-full py-3 text-white font-bold rounded shadow">
-      Verify Cleanup
-    </button>
-  </div>
+  <!-- Verify -->
+<div class="mt-6">
+  <button id="verifyBtn" onclick="verifyCleanup()" 
+    class="bg-green-700 hover:bg-green-800 w-full py-3 text-white font-bold rounded shadow flex items-center justify-center gap-2">
+    <span id="verifyText">Verify Cleanup</span>
+    <svg id="loadingIcon" class="hidden animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+    </svg>
+  </button>
+</div>
+
 </main>
 
 <script>
@@ -142,6 +149,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Verify Cleanup
 async function verifyCleanup() {
+  const verifyBtn = document.getElementById("verifyBtn");
+  const verifyText = document.getElementById("verifyText");
+  const loadingIcon = document.getElementById("loadingIcon");
+
   const beforeUploaded = document.getElementById('beforeUpload').files[0];
   const capturedAfter = capturedImage.src;
 
@@ -156,25 +167,38 @@ async function verifyCleanup() {
     return;
   }
 
-  const afterBlob = await fetch(capturedAfter).then(res => res.blob());
-  const formData = new FormData();
-  formData.append("pre_image", beforeUploaded);
-  formData.append("post_image", afterBlob, "after.png");
+  // Disable button + show loader
+  verifyBtn.disabled = true;
+  verifyBtn.classList.add("opacity-70", "cursor-not-allowed");
+  verifyText.textContent = "Verifying...";
+  loadingIcon.classList.remove("hidden");
 
-  fetch("https://amosgodswill00-cleansightapp.hf.space/ai/evaluate-cleanliness", {
-    method: "POST",
-    headers: { "Authorization": `Bearer ${token}` },
-    body: formData
-  })
-    .then(res => res.json())
-    .then(data => {
-      showCongratsPopup(data.total_cleanliness_score, data.tokens_earned);
-    })
-    .catch(err => {
-      console.error(err);
-      alert("Error during verification");
+  try {
+    const afterBlob = await fetch(capturedAfter).then(res => res.blob());
+    const formData = new FormData();
+    formData.append("pre_image", beforeUploaded);
+    formData.append("post_image", afterBlob, "after.png");
+
+    const res = await fetch("https://amosgodswill00-cleansightapp.hf.space/ai/evaluate-cleanliness", {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${token}` },
+      body: formData
     });
+
+    const data = await res.json();
+    showCongratsPopup(data.total_cleanliness_score, data.tokens_earned);
+  } catch (err) {
+    console.error(err);
+    alert("Error during verification");
+  } finally {
+    // Re-enable button + hide loader
+    verifyBtn.disabled = false;
+    verifyBtn.classList.remove("opacity-70", "cursor-not-allowed");
+    verifyText.textContent = "Verify Cleanup";
+    loadingIcon.classList.add("hidden");
+  }
 }
+
 
 // Popup
 function showCongratsPopup(score, tokens) {
@@ -206,3 +230,4 @@ document.head.appendChild(style);
 
 </body>
 </html>
+
