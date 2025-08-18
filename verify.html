@@ -110,10 +110,19 @@ function switchTab(tab) {
 
 // Camera functions
 function startCamera() {
-  navigator.mediaDevices.getUserMedia({ video: true })
-    .then(stream => { video.srcObject = stream; })
-    .catch(err => console.error('Camera error:', err));
+  navigator.mediaDevices.getUserMedia({
+    video: {
+      facingMode: { exact: "environment" } // forces the back camera
+    }
+  })
+  .then(stream => {
+    video.srcObject = stream;
+  })
+  .catch(err => {
+    console.error('Camera error:', err);
+  });
 }
+
 
 function captureImage() {
   canvas.width = video.videoWidth;
@@ -230,4 +239,5 @@ document.head.appendChild(style);
 
 </body>
 </html>
+
 
